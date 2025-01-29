@@ -4,38 +4,50 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch:  # allows manual workflow triggers
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
+      # 1) Check out the repository
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up gcloud
+      # 2) Authenticate using a service account JSON
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.SERVICE_ACCOUNT_GCP_CI_CD }}
+
+      # 3) Install the gcloud CLI
+      - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
+          # install_components: '["beta"]' # if you need additional components
 
-      - name: Configure Docker for gcloud
+      # 4) Configure Docker to use gcloud credentials
+      - name: Configure Docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev -q
 
+      # 5) Build Docker image
       - name: Build Docker Image
         run: |
-          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/gcp-fastapi-api:latest .
+          docker build \
+            -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/my-fastapi-api:latest \
+            .
 
+      # 6) Push Docker image to Artifact Registry
       - name: Push Docker Image
         run: |
-          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/gcp-fastapi-api:latest
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/my-fastapi-api:latest
 
+      # 7) Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy my-fastapi-service \
-            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/gcp-fastapi-api:latest \
+            --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/my-fastapi-api:latest \
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated
