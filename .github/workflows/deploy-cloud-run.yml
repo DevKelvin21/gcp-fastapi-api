@@ -3,18 +3,17 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - main  # or your production branch
-  workflow_dispatch:  # allows manual triggers
+      - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      # 1) Check out the repository code
       - name: Checkout
         uses: actions/checkout@v3
 
-      # 2) Set up gcloud CLI using the GitHub Action
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
@@ -22,21 +21,17 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
 
-      # 3) Configure Docker to authenticate with gcloud
       - name: Configure Docker for gcloud
         run: gcloud auth configure-docker us-central1-docker.pkg.dev -q
 
-      # 4) Build and Tag Docker Image
       - name: Build Docker Image
         run: |
           docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/gcp-fastapi-api:latest .
 
-      # 5) Push Docker Image to Artifact Registry (or Container Registry)
       - name: Push Docker Image
         run: |
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/gcp-fastapi-api:latest
 
-      # 6) Deploy to Cloud Run
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy my-fastapi-service \
