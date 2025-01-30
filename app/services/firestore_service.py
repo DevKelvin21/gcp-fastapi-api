@@ -7,8 +7,14 @@ class FirestoreService:
     def __init__(self):
         self.client = firestore.Client()
         self.collection_name = os.environ.get("FIRESTORE_COLLECTION", ENV_VAR_MSG)
+        if self.collection_name == ENV_VAR_MSG:
+            raise ValueError(ENV_VAR_MSG)
 
     def create_document(self, data: dict) -> str:
+        """
+        Creates a new document in Firestore with the provided data.
+        Returns the document ID.
+        """
         doc_ref = self.client.collection(self.collection_name).document()
         doc_ref.set(data)
         return doc_ref.id
@@ -19,6 +25,10 @@ class FirestoreService:
         if doc_snapshot.exists:
             return doc_snapshot.to_dict()
         return None
+
+    def list_documents(self) -> list:
+        docs = self.client.collection(self.collection_name).stream()
+        return [{"id": doc.id, **doc.to_dict()} for doc in docs]
 
     def update_document(self, doc_id: str, data: dict) -> bool:
         doc_ref = self.client.collection(self.collection_name).document(doc_id)

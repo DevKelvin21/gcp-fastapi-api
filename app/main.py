@@ -1,6 +1,6 @@
 import uvicorn
-from fastapi import FastAPI
-from app.routers import firestore, pubsub, storage
+from fastapi import FastAPI, APIRouter
+from app.routers import firestore, pubsub, storage, scrub_files
 from dotenv import load_dotenv
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,12 +22,20 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
-# Include router modules
-app.include_router(firestore.router, prefix="/firestore", tags=["Firestore"])
-app.include_router(pubsub.router, prefix="/pubsub", tags=["PubSub"])
-app.include_router(storage.router, prefix="/storage", tags=["Storage"])
+# Create a new APIRouter with the prefix /api/v1
+api_router = APIRouter(prefix="/api/v1")
+
+# Include router modules under the new APIRouter
+api_router.include_router(firestore.router, prefix="/firestore", tags=["Firestore"])
+api_router.include_router(pubsub.router, prefix="/pubsub", tags=["PubSub"])
+api_router.include_router(storage.router, prefix="/storage", tags=["Storage"])
+api_router.include_router(scrub_files.router)
+
+# Include the new APIRouter in the main app
+app.include_router(api_router)
 
 @app.get("/health", tags=["Health"])
 def health_check():

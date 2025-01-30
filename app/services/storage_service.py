@@ -9,11 +9,11 @@ class StorageService:
         self.client = storage.Client()
         self.bucket_name = os.environ.get("BUCKET_NAME", ENV_VAR_MSG)
 
-    async def upload_file(self, file: UploadFile) -> str:
+    async def upload_file(self, file: UploadFile, path: str) -> str:
         bucket = self.client.bucket(self.bucket_name)
-        blob = bucket.blob(file.filename)
+        blob = bucket.blob(path)
         blob.upload_from_string(await file.read(), content_type=file.content_type)
-        return file.filename
+        return path
 
     def download_file(self, filename: str) -> bytes:
         bucket = self.client.bucket(self.bucket_name)
@@ -21,3 +21,6 @@ class StorageService:
         if not blob.exists():
             return None
         return blob.download_as_bytes()
+
+    def get_public_url(self, filename: str) -> str:
+        return f"https://storage.googleapis.com/{self.bucket_name}/{filename}"
