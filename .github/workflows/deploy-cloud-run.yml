@@ -50,5 +50,5 @@ jobs:
             --image us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/at-repo/my-fastapi-api:latest \
             --platform managed \
             --region us-central1 \
-            --allow-unauthenticated
-             --set-env-vars FIRESTORE_COLLECTION=${{ secrets.FIRESTORE_COLLECTION }},BUCKET_NAME=${{ secrets.BUCKET_NAME }},PUBSUB_TOPIC=${{ secrets.PUBSUB_TOPIC }}
+            --allow-unauthenticated \
+            --set-env-vars FIRESTORE_COLLECTION=${{ secrets.FIRESTORE_COLLECTION }},BUCKET_NAME=${{ secrets.BUCKET_NAME }},PUBSUB_TOPIC=${{ secrets.PUBSUB_TOPIC }}
