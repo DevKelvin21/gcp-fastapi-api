@@ -7,8 +7,6 @@ class FirestoreService:
     def __init__(self):
         self.client = firestore.Client()
         self.collection_name = os.environ.get("FIRESTORE_COLLECTION", ENV_VAR_MSG)
-        if self.collection_name == ENV_VAR_MSG:
-            raise ValueError(ENV_VAR_MSG)
 
     def create_document(self, data: dict) -> str:
         """
