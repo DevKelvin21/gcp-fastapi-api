@@ -12,6 +12,7 @@ from app.services.storage_service import StorageService
 from app.services.pubsub_service import PubSubService
 from app.models.item import Item, Status, OutputFiles
 from app.models.file_type import FileType
+from app.models.pubsub_message import PubSubMessage
 from app.utils import make_serializable
 from app.auth_google import google_auth_dependency #TODO: implement auth for scrub-files
 
@@ -70,15 +71,13 @@ async def upload_file(
 
         doc_id = firestore_service.create_document(file_config.dict(by_alias=True))
 
-        # Build a message with relevant info for the Dataflow pipeline
-        message = {
-            "fileId": doc_id,
-            "bucket": os.environ.get("BUCKET_NAME"),
-            "fileName": file_config.file_name,
-            "configDocumentPath": f"{os.environ.get("FIRESTORE_COLLECTION")}/{doc_id}"
-        }
-        # Publish a message to Pub/Sub for processing
-        background_tasks.add_task(pubsub_service.publish_message, message)
+        message = PubSubMessage(
+            fileId=doc_id,
+            bucket=os.getenv("BUCKET_NAME"),
+            fileName=file_config.file_name,
+            configDocumentPath=f"{os.getenv('FIRESTORE_COLLECTION')}/{doc_id}",
+        )
+        background_tasks.add_task(pubsub_service.publish_message, message.dict())
 
         return JSONResponse(
             status_code=200,
