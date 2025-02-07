@@ -51,4 +51,4 @@ jobs:
             --platform managed \
             --region us-central1 \
             --allow-unauthenticated \
-            --set-env-vars FIRESTORE_COLLECTION=${{ secrets.FIRESTORE_COLLECTION }},BUCKET_NAME=${{ secrets.BUCKET_NAME }},PUBSUB_TOPIC=${{ secrets.PUBSUB_TOPIC }}
+            --set-env-vars FIRESTORE_COLLECTION=${{ secrets.FIRESTORE_COLLECTION }},BUCKET_NAME=${{ secrets.BUCKET_NAME }},PUBSUB_TOPIC=${{ secrets.PUBSUB_TOPIC }},GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
