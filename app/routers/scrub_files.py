@@ -110,7 +110,7 @@ async def get_status(id: str):
 FILE_TYPE_MAPPING = {
     FileType.clean: "cleanFilePath",
     FileType.invalid: "invaldFilePath",
-    FileType.dnc: "dncFilePath",
+    FileType.dnc: "blacklistedFilePath",
 }
 
 @router.get("/download/{id}")
